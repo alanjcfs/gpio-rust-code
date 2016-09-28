@@ -1,0 +1,6 @@
+[package]
+name = "gpio-rust-code"
+version = "0.1.0"
+authors = ["pi"]
+
+[dependencies]

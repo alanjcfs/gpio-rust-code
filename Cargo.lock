@@ -1,0 +1,4 @@
+[root]
+name = "gpio-rust-code"
+version = "0.1.0"
+
