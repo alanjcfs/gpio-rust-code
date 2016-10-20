@@ -1,3 +1,4 @@
+extern crate gpio_rust_code;
 use std::fs::File;
 use std::io::*;
 
@@ -18,18 +19,12 @@ const PULLUPDN_OFFSET: usize = 37;
 const PULLUPDNCLK_OFFSET: usize = 38;
 
 fn main() {
-  let f = open_file("/dev/gpiomem");
-  let mut buf = [0; 4];
-  println!("{:?}", f);
+  let mut f = open_file("/dev/gpiomem").unwrap();
+  let mut buf = Vec::new();
 
-  let mut g = open_file("/proc/device-tree/soc/ranges").unwrap();
+  let result = f.read_to_end(&mut buf);
 
-
-  g.seek(SeekFrom::Start(4));
-
-  g.read(&mut buf[..]);
-
-  println!("{:?}", buf);
+  println!("{:?}", result);
 }
 
 fn open_file(dev: &str) -> std::result::Result<File, Error> {
