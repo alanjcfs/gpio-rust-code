@@ -1,6 +1,6 @@
 extern crate libc;
 extern crate memmap;
-use std::fs::File;
+use std::fs::OpenOptions;
 use std::io;
 use memmap::{Mmap, Protection};
 
@@ -36,7 +36,7 @@ const SETUP_MMAP_FAIL: usize =    3;
 // const PUD_UP: usize =   2;
 
 pub fn setup() -> Result<Mmap, io::Error> {
-    if let Ok(mem_fd) = File::open("/dev/gpiomem") {
+    if let Ok(mem_fd) = OpenOptions::new().read(true).write(true).open("/dev/gpiomem") {
         println!("{:?}",mem_fd.metadata().unwrap().file_type());
     // gpio_map = (uint32_t *)mmap(NULL, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, mem_fd, 0);
         Mmap::open(&mem_fd, Protection::ReadWrite)
