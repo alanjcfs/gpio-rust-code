@@ -1,7 +1,7 @@
 extern crate gpio_rust_code;
 
 fn main() {
-    gpio_rust_code::setup();
+    let foo = gpio_rust_code::setup();
     println!("{:?}", foo)
 }
 
