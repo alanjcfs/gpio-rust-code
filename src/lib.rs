@@ -2,11 +2,13 @@ extern crate libc;
 extern crate memmap;
 use std::fs::File;
 use std::io;
+use std::io::Read;
+use std::mem;
 use memmap::{Mmap, Protection};
 
 // const BCM2708_PERI_BASE_DEFAULT: usize = 0x20000000;
 // const BCM2709_PERI_BASE_DEFAULT: usize = 0x3f000000;
-// const GPIO_BASE_OFFSET: usize = 0x200000;
+const GPIO_BASE_OFFSET: usize = 0x200000;
 // const FSEL_OFFSET: usize = 0;
 // const SET_OFFSET: usize = 7;
 // const CLR_OFFSET: usize = 10;
@@ -20,10 +22,10 @@ use memmap::{Mmap, Protection};
 // const PULLUPDNCLK_OFFSET: usize = 38;
 
 
-const SETUP_OK: usize =           0;
+// const SETUP_OK: usize =           0;
 // const SETUP_DEVMEM_FAIL: usize =  1;
 // const SETUP_MALLOC_FAIL: usize =  2;
-const SETUP_MMAP_FAIL: usize =    3;
+// const SETUP_MMAP_FAIL: usize =    3;
 // const SETUP_CPUINFO_FAIL: usize = 4;
 // const SETUP_NOT_RPI_FAIL: usize = 5;
 // const INPUT: usize =  1;// is really 0 for control register!
@@ -35,12 +37,20 @@ const SETUP_MMAP_FAIL: usize =    3;
 // const PUD_DOWN: usize = 1;
 // const PUD_UP: usize =   2;
 
-pub fn setup() -> Result<Mmap, io::Error> {
-    if let Ok(mem_fd) = File::open("/dev/gpiomem") {
-        println!("{:?}",mem_fd.metadata().unwrap().file_type());
-    // gpio_map = (uint32_t *)mmap(NULL, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, mem_fd, 0);
-        Mmap::open(&mem_fd, Protection::ReadWrite)
-    } else {
-        panic!("Could not query /dev/gpiomem")
+pub fn setup() -> memmap::Mmap{
+    let mut fp = File::open("/proc/device-tree/soc/ranges").unwrap();
+    let mut buf: [u8; 4] = [0, 0 ,0, 0];
+    let peribase: usize;
+
+    fp.read(&mut buf[..]).unwrap();
+    // peribase = buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3] << 0 as u32;
+    unsafe {
+        peribase = mem::transmute::<[u8;4], u32>(buf) as usize;
     }
+    println!("{:?}", peribase);
+    // println!("{:?}", peribase);
+    let gpio_base = peribase as usize + GPIO_BASE_OFFSET;
+    let file = File::open("/dev/mem").unwrap();
+    let mmap = Mmap::open_with_offset(&file, Protection::ReadWrite, GPIO_BASE_OFFSET, 8).unwrap();
+    return mmap;
 }
