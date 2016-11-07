@@ -1,6 +1,7 @@
 extern crate libc;
 extern crate memmap;
 use std::fs::File;
+use std::fs::OpenOptions;
 use std::io;
 use std::io::Read;
 use std::mem;
@@ -50,7 +51,7 @@ pub fn setup() -> memmap::Mmap{
     println!("{:?}", peribase);
     // println!("{:?}", peribase);
     let gpio_base = peribase as usize + GPIO_BASE_OFFSET;
-    let file = File::open("/dev/mem").unwrap();
-    let mmap = Mmap::open_with_offset(&file, Protection::ReadWrite, GPIO_BASE_OFFSET, 8).unwrap();
+    let file =  OpenOptions::new().read(true).write(true).open("/dev/mem").unwrap();
+    let mmap = Mmap::open_with_offset(&file, Protection::ReadWrite, GPIO_BASE_OFFSET, 4096 + 4095).unwrap();
     return mmap;
 }
