@@ -9,7 +9,7 @@ use memmap::{Mmap, Protection};
 
 // const BCM2708_PERI_BASE_DEFAULT: usize = 0x20000000;
 // const BCM2709_PERI_BASE_DEFAULT: usize = 0x3f000000;
-const GPIO_BASE_OFFSET: usize = 0x200000;
+const GPIO_BASE_OFFSET: usize = 0x20200000;
 // const FSEL_OFFSET: usize = 0;
 // const SET_OFFSET: usize = 7;
 // const CLR_OFFSET: usize = 10;
@@ -48,7 +48,6 @@ pub fn setup() -> memmap::Mmap{
     unsafe {
         peribase = mem::transmute::<[u8;4], u32>(buf) as usize;
     }
-    println!("{:?}", peribase);
     // println!("{:?}", peribase);
     let gpio_base = peribase as usize + GPIO_BASE_OFFSET;
     let file =  OpenOptions::new().read(true).write(true).open("/dev/mem").unwrap();
