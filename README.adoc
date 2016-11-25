@@ -1,0 +1,14 @@
+= GPIO Rust Code
+
+In the shell, you can run the following
+
+    # echo 23 > /sys/class/gpio/export
+    # echo out > /sys/class/gpio23/direction
+    # echo 1 > /sys/class/gpio/gpio23/value
+
+This tells the system to get GPIO 23 ready for output and outputs the value 1,
+which turns it on.
+
+== Is it any good?
+
+No.
