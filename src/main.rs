@@ -1,5 +1,6 @@
 extern crate gpio_rust_code;
 
+#[allow(dead_code)]
 fn main() {
     // Step 1: Setup an mmap
     let mut result = gpio_rust_code::setup();
