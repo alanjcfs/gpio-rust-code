@@ -5,6 +5,8 @@ use std::fs::OpenOptions;
 use std::io;
 use std::io::Read;
 use std::mem;
+use std::result::Result;
+use std::io::Error;
 use memmap::{Mmap, Protection};
 
 const BCM2708_PERI_BASE_DEFAULT: usize = 0x20000000;
@@ -25,12 +27,13 @@ const PULLUPDNCLK_OFFSET:        usize = 38; // 0x0098 / 4
 const PAGE_SIZE:  usize = 4 * 1024;
 const BLOCK_SIZE: usize = 4 * 1024;
 
-const SETUP_OK:           usize = 0;
-const SETUP_DEVMEM_FAIL:  usize = 1;
-const SETUP_MALLOC_FAIL:  usize = 2;
-const SETUP_MMAP_FAIL:    usize = 3;
-const SETUP_CPUINFO_FAIL: usize = 4;
-const SETUP_NOT_RPI_FAIL: usize = 5;
+pub enum SetupFailure {
+    DEVMEM,
+    MALLOC,
+    MMAP,
+    CPUINFO,
+    NOT_RPI,
+}
 
 const INPUT:              usize = 1;// is really 0 for control register!
 const OUTPUT:             usize = 0;// is really 1 for control register!
@@ -44,8 +47,13 @@ const PUD_DOWN:           usize = 1;
 const PUD_UP:             usize = 2;
 
 // int setup(void);
-pub fn setup() -> memmap::Mmap {
-    let mut fp = File::open("/proc/device-tree/soc/ranges").expect("Is not running on Raspberry Pi");
+pub fn setup() -> Result<memmap::Mmap, SetupFailure> {
+    let mut fp = match File::open("/proc/device-tree/soc/ranges") {
+        Ok(fp) => fp,
+        Err(_) => {
+            return Err(SetupFailure::NOT_RPI)
+        }
+    };
     let mut buf: [u8; 4] = [0, 0 ,0, 0];
     let peribase: usize;
 
@@ -58,7 +66,7 @@ pub fn setup() -> memmap::Mmap {
     let gpio_base = peribase as usize + GPIO_BASE_OFFSET;
     let file =  OpenOptions::new().read(true).write(true).open("/dev/mem").unwrap();
     let mmap = Mmap::open_with_offset(&file, Protection::ReadWrite, GPIO_BASE_OFFSET, 4096 + 4095).unwrap();
-    return mmap;
+    return Ok(mmap);
 }
 
 // void setup_gpio(int gpio, int direction, int pud);
